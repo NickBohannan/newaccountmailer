@@ -1,0 +1,20 @@
+{
+  "name": "newaccountmailer",
+  "version": "1.0.0",
+  "description": "PAL Health Technologies New Account Automailer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nick Bohannan",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "ejs": "^2.6.2",
+    "express": "^4.17.1",
+    "googleapis": "^39.2.0",
+    "nodemailer": "^6.3.0",
+    "path": "^0.12.7",
+    "pdffiller": "0.0.11"
+  }
+}
