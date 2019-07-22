@@ -10,11 +10,15 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "dotenv": "^8.0.0",
     "ejs": "^2.6.2",
     "express": "^4.17.1",
+    "fill-pdf": "^1.1.0",
     "googleapis": "^39.2.0",
     "nodemailer": "^6.3.0",
     "path": "^0.12.7",
-    "pdffiller": "0.0.11"
+    "pdf-form-fill": "^0.2.1",
+    "pdffiller": "0.0.11",
+    "utf8-fdf-generator": "0.0.3"
   }
 }

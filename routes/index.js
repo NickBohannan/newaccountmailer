@@ -1,9 +1,9 @@
 const express = require('express')
 const nodemailer = require('nodemailer')
-const pdfFiller = require('pdffiller')
 const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
+const pdfFiller = require('pdffiller')
 
 const router = express.Router()
 
@@ -12,42 +12,6 @@ router.get("/", (req, res) => {
 })
 
 router.post("/", async (req, res) => {
-
-    let newAccountData = {}
-    let providerEmail = req.body.email
-    let providerAccountNumber = req.body.accountNumber
-
-    let sourcePDF = "PAL_OrderForm_1001_Orthoses.pdf"
-    let destinationPDF = "PAL_Populated_Orthoses_OrderForm"
-
-    const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
-    const TOKEN_PATH = 'token.json'
-
-    fs.readFile('credentials.json', (err, content) => {
-        if (err) return console.log('Error loading client secret file:', err);
-        // Authorize a client with credentials, then call the Google Sheets API.
-        authorize(JSON.parse(content), getNewAccountInfo);
-    });
-
-    let shouldFlatten = false
-
-    let data = {
-        "ACCOUNT": newAccountData.accountNumber,
-        "NAME": newAccountData.businessName,
-        "ADDRESS": newAccountData.address1,
-         + ' ' + 
-            newAccountData.address2 + ' ' +
-            newAccountData.city + ', ' +
-            newAccountData.state + ' ' +
-            newAccountData.zip,
-        "PHONE_FAX": newAccountData.phone
-    }
-
-    pdfFiller.fillFormWithFlatten(sourcePDF, destinationPDF, data, shouldFlatten, function(err) {
-        if (err) throw err;
-        console.log("In callback (we're done).")
-    })
-    
     /**
      * Create an OAuth2 client with the given credentials, and then execute the
      * given callback function.
@@ -130,33 +94,93 @@ router.post("/", async (req, res) => {
             console.log('No data found.');
             }
         });
-
-
     }
+    let data
+    let newAccountData = {}
+    let providerEmail = req.body.email
+    let providerAccountNumber = req.body.accountNumber
+    let shouldFlatten
 
-    // let accountNumber = req.body.accountNumber
-    //     // create reusable transporter object using the default SMTP transport
-    // let transporter = nodemailer.createTransport({
-    //     host: "smtp.gmail.com",
-    //     port: 587,
-    //     secure: false, // true for 465, false for other ports
-    //     auth: {
-    //     user: "palhealthtechnologies@gmail.com",
-    //     pass: process.env.PASSWORD
-    //     }
-    // });
+    let sourcePDF = "PAL_OrderForm_1001_Orthoses.pdf"
+    let destinationPDF = "PAL_Populated_Orthoses_OrderForm.pdf"
 
-    // // send mail with defined transport object
-    // let info = await transporter.sendMail({
-    //     from: 'PAL Health Tecnologies', // sender address
-    //     to: "n.bohannan@palhealth.com", // list of receivers
-    //     subject: "Hello ✔", // Subject line
-    //     text: `Sup homie here is the account number: ${accountNumber}`, // plain text body
-    //     // html: "<b>Hello world?</b>" // html body
-    // });
+    const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+    const TOKEN_PATH = 'token.json'
 
-    // console.log("Message sent: %s", info.messageId);
-    // // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+    await fs.readFile('credentials.json', (err, content) => {
+        if (err) return console.log('Error loading client secret file:', err);
+        // Authorize a client with credentials, then call the Google Sheets API.
+        authorize(JSON.parse(content), getNewAccountInfo);
+    })
+
+    setTimeout(function() {
+        if (newAccountData.address2.length > 1) {
+            data = {
+                ACCOUNT: newAccountData.accountNumber,
+                NAME: newAccountData.businessName,
+                ADDRESS: newAccountData.address1 + ' ' + 
+                    newAccountData.address2 + ' ' +
+                    newAccountData.city + ', ' +
+                    newAccountData.state + ' ' +
+                    newAccountData.zip,
+                PHONE_FAX: newAccountData.phone
+            }
+        } else {
+            data = {
+                ACCOUNT: newAccountData.accountNumber,
+                NAME: newAccountData.businessName,
+                ADDRESS: newAccountData.address1 + ' ' + 
+                    newAccountData.city + ', ' +
+                    newAccountData.state + ' ' +
+                    newAccountData.zip,
+                PHONE_FAX: newAccountData.phone
+            }
+        }
+        shouldFlatten = false;
+    }, 1500)
+
+    setTimeout(async function() {
+        await pdfFiller.fillFormWithFlatten(sourcePDF, destinationPDF, data, shouldFlatten, function() {
+            console.log("In callback (we're done).");
+        })
+    }, 3000)
+    
+    setTimeout(async function() {
+        let accountNumber = req.body.accountNumber
+        // create reusable transporter object using the default SMTP transport
+        let transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false, // true for 465, false for other ports
+            auth: {
+            user: "palhealthtechnologies@gmail.com",
+            pass: process.env.PASSWORD
+            }
+        });
+
+        // send mail with defined transport object
+        let info = await transporter.sendMail({
+            from: 'PAL Health Tecnologies', // sender address
+            to: providerEmail, // list of receivers
+            subject: "AutoMailer Test", // Subject line
+            text: `Here is the account number: ${accountNumber}`, // plain text body
+            attachments: {
+                filename: 'PAL_Populated_Orthoses_OrderForm.pdf',
+                path: 'PAL_Populated_Orthoses_OrderForm.pdf'
+            }
+            // html: "<b>Hello world?</b>" // html body
+        })
+    }, 5000)
+
+    setTimeout(function() {
+        fs.unlink("PAL_Populated_Orthoses_OrderForm.pdf", (err) => {
+            if (err) {
+                console.error(err)
+                return
+            }
+            console.log("Removing file.")
+        })
+    }, 6500)
 })
 
 module.exports = router
