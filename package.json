@@ -11,6 +11,7 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "dotenv": "^8.0.0",
+    "easy-soap-request": "^2.6.0",
     "ejs": "^2.6.2",
     "express": "^4.17.1",
     "fill-pdf": "^1.1.0",
@@ -19,6 +20,7 @@
     "path": "^0.12.7",
     "pdf-form-fill": "^0.2.1",
     "pdffiller": "0.0.11",
+    "shippo": "^1.3.1",
     "utf8-fdf-generator": "0.0.3"
   }
 }

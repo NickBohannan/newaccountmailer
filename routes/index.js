@@ -88,18 +88,17 @@ router.post("/", async (req, res) => {
                         newAccountData.phone = rows[i][22]
                     }
                 }
-                console.log(newAccountData)
-                console.log(providerEmail)
+                console.log("New Account data retrieved...")
             } else {
             console.log('No data found.');
             }
         });
     }
-    let data
+
+    let data, shouldFlatten
     let newAccountData = {}
     let providerEmail = req.body.email
     let providerAccountNumber = req.body.accountNumber
-    let shouldFlatten
 
     let sourcePDF = "PAL_OrderForm_1001_Orthoses.pdf"
     let destinationPDF = "PAL_Populated_Orthoses_OrderForm.pdf"
@@ -111,11 +110,13 @@ router.post("/", async (req, res) => {
         if (err) return console.log('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Google Sheets API.
         authorize(JSON.parse(content), getNewAccountInfo);
+        console.log("Reading credentials.json...")
     })
 
     setTimeout(function() {
         if (newAccountData.address2.length > 1) {
             data = {
+                BARCODE: `*C${newAccountData.accountNumber}*`,
                 ACCOUNT: newAccountData.accountNumber,
                 NAME: newAccountData.businessName,
                 ADDRESS: newAccountData.address1 + ' ' + 
@@ -127,6 +128,7 @@ router.post("/", async (req, res) => {
             }
         } else {
             data = {
+                BARCODE: `*C${newAccountData.accountNumber}*`,
                 ACCOUNT: newAccountData.accountNumber,
                 NAME: newAccountData.businessName,
                 ADDRESS: newAccountData.address1 + ' ' + 
@@ -141,7 +143,7 @@ router.post("/", async (req, res) => {
 
     setTimeout(async function() {
         await pdfFiller.fillFormWithFlatten(sourcePDF, destinationPDF, data, shouldFlatten, function() {
-            console.log("In callback (we're done).");
+            console.log("Order form populated...");
         })
     }, 3000)
     
@@ -164,22 +166,29 @@ router.post("/", async (req, res) => {
             to: providerEmail, // list of receivers
             subject: "AutoMailer Test", // Subject line
             text: `Here is the account number: ${accountNumber}`, // plain text body
-            attachments: {
+            attachments: [{
                 filename: 'PAL_Populated_Orthoses_OrderForm.pdf',
-                path: 'PAL_Populated_Orthoses_OrderForm.pdf'
-            }
+                path: `PAL_Populated_Orthoses_OrderForm.pdf`
+            },
+            {
+                filename: 'PAL_Catalog_June2019.pdf',
+                path: 'PAL_Catalog_June2019.pdf'
+            }]
             // html: "<b>Hello world?</b>" // html body
         })
+        console.log("Email has been sent...")
     }, 5000)
 
     setTimeout(function() {
         fs.unlink("PAL_Populated_Orthoses_OrderForm.pdf", (err) => {
             if (err) {
                 console.error(err)
-                return
+                return 1
             }
-            console.log("Removing file.")
+            console.log("File removed...")
+            console.log("End of script...")
         })
+        res.send("Email has been sent. Please close window or press the back button.")
     }, 6500)
 })
 
