@@ -16,7 +16,7 @@
     "express": "^4.17.1",
     "fill-pdf": "^1.1.0",
     "googleapis": "^39.2.0",
-    "nodemailer": "^6.3.0",
+    "nodemailer": "^6.4.16",
     "path": "^0.12.7",
     "pdf-form-fill": "^0.2.1",
     "pdffiller": "0.0.11",
