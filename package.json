@@ -13,7 +13,7 @@
     "dotenv": "^8.0.0",
     "easy-soap-request": "^2.6.0",
     "ejs": "^2.6.2",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "fill-pdf": "^1.1.0",
     "googleapis": "^39.2.0",
     "nodemailer": "^6.3.0",
